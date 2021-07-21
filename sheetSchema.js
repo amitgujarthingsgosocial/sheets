@@ -7,12 +7,17 @@ const sheetScheama = new Schema({
    },
    sheetSet :[
       { 
+         sheetId:{ 
          type:Schema.Types.ObjectId ,
-          ref:'Sheet' 
-      }
+         ref:'Sheet' 
+      },
+
+      Topic:String
+      
+       }
     ]
 
 });
 
-module.exports  = model('sheetCollection',machineScheama);
+module.exports  = model('sheetCollection',sheetScheama);
 
