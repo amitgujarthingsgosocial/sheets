@@ -6,14 +6,15 @@ const sheetScheama = new Schema({
         type:String
    },
    sheetSet :[
+
+           
       { 
+         _id:false,
+         sheetTopic:String,
          sheetId:{ 
          type:Schema.Types.ObjectId ,
          ref:'Sheet' 
-      },
-
-      Topic:String
-      
+                 }
        }
     ]
 
