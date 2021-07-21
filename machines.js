@@ -14,10 +14,12 @@ const rowsModel =
 require('./../Models1/rowsSchema');
 
 
-
+// create new sheet 
 router.post('/create',async(req,res)=>{
 
-   const machineId = req.body.machineId;
+  try{
+
+const machineId = req.body.machineId;
    const topic = req.body.topic;
 
   const sheetFormat = {
@@ -79,15 +81,78 @@ router.post('/create',async(req,res)=>{
 
   } 
 
-
-
-
-
-
-
+  }catch(e)
+  {
+      res.send(e);
+  }
 
 
 });
+
+
+// update sheet name only
+router.patch("/update",async(req,res)=>{
+
+  try{
+
+   const sheetId = req.body.sheetId;
+   const topic = req.body.sheetTopic;
+   const sheet = await sheetModel.findByIdAndUpdate(
+                    sheetId,
+                  {
+                    sheetTopic:topic
+                  },{
+                      new:true
+                  }
+                  );
+    res.send(sheet);
+
+  }catch(e)
+  {
+      res.send(e);
+  }
+
+});
+
+
+// select all sheets associated with machineId
+router.get('/selectAll/:machineId',async(req,res)=>{
+ 
+   const machineId = req.params.machineId;
+   const sheets = await  sheetSchemaModel.
+   findOne({machineId:machineId});
+
+   res.send(sheets);
+
+
+});
+
+// delete sheet
+router.delete('/delete',async(req,res)=>{
+
+try{
+
+const sheetId = req.body.sheetId;
+const machineId = req.body.machineId;
+
+const sheetTemp = await sheetModel.
+findByIdAndDelete(sheetId);
+
+const temp = await sheetSchemaModel.
+findOneAndUpdate({machineId:machineId} );    
+
+temp.sheetSet.pull({sheetId:sheetId});
+temp.save();
+    
+res.send("success fully deleted");
+
+}catch(e)
+{
+   res.send(e);
+}
+
+});
+
 
 
 
