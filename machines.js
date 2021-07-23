@@ -165,28 +165,44 @@ try{
 
 
 // select all columns and rows asscoiated with sheet id
-router.get('/getSheetData',async(req,res)=>{
 
-   try{
-    
-    console.log('aaaaaaaaaaaaa');
-    const id = mongoose.Types.ObjectId("60f9351bd5a20e05a487173e");
+router.get("/getSheetData",async(req,res)=>{
+ 
+  const sheetId = mongoose.Types.ObjectId(req.body.sheetId);
+  const response = await sheetModel.aggregate([
 
-    const tif = mongoose.Types.ObjectId("60f940adef1ce81ec0e6c285");
+        { $match : { _id:sheetId } },
+        { $lookup :{
 
-    const temp = await colsModel.find({sheetId:id}).
-         populate('rows.rawData');
+              from: 'colscollections',
+              localField: '_id',
+              foreignField: 'sheetId',
+              as: 'Cols',
+
+        } },
+
+      {  $unwind :{
+        path :'$Cols', 
+        preserveNullAndEmptyArrays: true} },
+
+            { $lookup :{
+
+              from: 'rowscollections',
+              localField: 'Cols._id',
+              foreignField: 'columnId',
+              as: 'Rows',
+
+        } },
+      
+      {   $unwind :{
+        path :'$Rows', 
+        preserveNullAndEmptyArrays: true}}
 
 
+    ]);
 
 
-      res.send(temp);
-
-   }catch(e)
-  {
-    res.send(e);
-  }
-
+  res.send(response);
 
 });
 
@@ -220,10 +236,8 @@ router.delete('/column/deleteColumn',async(req,res,next)=>{
 
   try{
 
-  
     const columnId = req.body.columnId;
-      
-
+    
      const columnData = await colsModel.findByIdAndDelete(columnId);
      console.log(columnData);
      res.status(200).json({
@@ -276,8 +290,6 @@ router.get('/column/getAll',async(req,res)=>{
 });
 
 
-
-
 /*/////////////////////  rows routes ///////////////////*/
 
 // add row
@@ -293,11 +305,11 @@ router.post('/row/addRow',async(req,res,next)=>{
      const Id = mongoose.Types.ObjectId(req.body.columnId);
      const rowsData = await rowsModel.create(data);
     
-     const rid = mongoose.Types.ObjectId(rowsData._id);
+    //  const rid = mongoose.Types.ObjectId(rowsData._id);
 
-    const colsData = await colsModel.findById(Id);
-    colsData.rows.push({rawData:rid});
-    colsData.save();
+    // const colsData = await colsModel.findById(Id);
+    // colsData.rows.push({rawData:rid});
+    // colsData.save();
 
      res.send(colsData);
 
@@ -372,6 +384,47 @@ router.get('/row/getAll',async(req,res,next)=>{
 
 
 
+/*  practise routes  */
+
+router.get("/amit",async(req,res)=>{
+ 
+  const sheetId = mongoose.Types.ObjectId(req.body.sheetId);
+  const response = await sheetModel.aggregate([
+
+        { $match : { _id:sheetId } },
+        { $lookup :{
+
+              from: 'colscollections',
+              localField: '_id',
+              foreignField: 'sheetId',
+              as: 'Cols',
+
+        } },
+
+      {  $unwind :{
+        path :'$Cols', 
+        preserveNullAndEmptyArrays: true} },
+
+            { $lookup :{
+
+              from: 'rowscollections',
+              localField: 'Cols._id',
+              foreignField: 'columnId',
+              as: 'Rows',
+
+        } },
+      
+      {   $unwind :{
+        path :'$Rows', 
+        preserveNullAndEmptyArrays: true}}
+
+
+    ]);
+
+
+  res.send(response);
+
+});
 
 
 
