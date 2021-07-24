@@ -1,7 +1,6 @@
 const express = require("express");
 const router = express.Router();
 const httpErrors = require('http-errors');
-const { findOneAndDelete } = require("../Models1/sheet");
 const mongoose = require('mongoose');
 
 // require sheet model 
@@ -23,7 +22,7 @@ router.post('/create',async(req,res)=>{
 
   try{
 
-const machineId = req.body.machineId;
+   const machineId = req.body.machineId;
    const topic = req.body.topic;
 
   const sheetFormat = {
@@ -75,8 +74,6 @@ const machineId = req.body.machineId;
     });
     
    temp.save();
-
-   
 
    const resFormat = {
       sheetId:sheet._id,
@@ -168,6 +165,8 @@ try{
 
 router.get("/getSheetData",async(req,res)=>{
  
+  try{
+
   const sheetId = mongoose.Types.ObjectId(req.body.sheetId);
   const response = await sheetModel.aggregate([
 
@@ -196,13 +195,32 @@ router.get("/getSheetData",async(req,res)=>{
       
       {   $unwind :{
         path :'$Rows', 
-        preserveNullAndEmptyArrays: true}}
+        preserveNullAndEmptyArrays: true}},
+
+        {$project :  { 
+           "MachineId":{  $ifNull:[ "$machineId" ,null ] },
+           "SheetId":{  $ifNull:[ "$Cols.sheetId" ,null ] },
+           "SheetTopic":{  $ifNull:[ "$sheetTopic" ,null ] },
+           "ColumnName": {  $ifNull:["$Cols.colName" ,null ] },
+           "ColumnId":{  $ifNull:[ "$Cols._id" ,null ] },
+           "RowId":{  $ifNull:[ "$Rows._id" ,null ] },
+           "Value":{  $ifNull:[ "$Rows.value" ,null ] },
+           _id:0
+            }  
+            
+         }
+  ]);
+    res.send(response);
+    
+  }catch(e)
+  {
+        res.send(e);
+  }
+
+  
 
 
-    ]);
 
-
-  res.send(response);
 
 });
 
@@ -388,7 +406,11 @@ router.get('/row/getAll',async(req,res,next)=>{
 
 router.get("/amit",async(req,res)=>{
  
-  const sheetId = mongoose.Types.ObjectId(req.body.sheetId);
+ let sheetId = mongoose.Types.ObjectId(req.body.sheetId);
+
+
+     sheetId =mongoose.Types.ObjectId("60f9351bd5a20e05a487173e");
+
   const response = await sheetModel.aggregate([
 
         { $match : { _id:sheetId } },
@@ -400,6 +422,10 @@ router.get("/amit",async(req,res)=>{
               as: 'Cols',
 
         } },
+
+
+
+
 
       {  $unwind :{
         path :'$Cols', 
@@ -416,7 +442,9 @@ router.get("/amit",async(req,res)=>{
       
       {   $unwind :{
         path :'$Rows', 
-        preserveNullAndEmptyArrays: true}}
+        preserveNullAndEmptyArrays: true}},
+       
+      
 
 
     ]);
