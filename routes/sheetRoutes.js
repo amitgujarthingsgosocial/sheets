@@ -66,6 +66,59 @@ try{
 
 });
 
+router.post('/cloneSheet',async(req,res)=>{
+
+try{
+
+ const machineId = req.body.machineId;
+ const sheetTopic = req.body.sheetTopic;
+ const cloneId  = req.body.cloneId;
+
+ const machineIdCheck = await sheetSetModel.findOne({
+     machineId:machineId
+ });
+ 
+
+   if(machineIdCheck == null)
+    {
+      
+      const temp = await sheetSetModel.create({ machineId:machineId });
+      const sheetSetId = temp._id;
+
+      const temp1 = await sheetModel.
+      create({ sheetTopic:sheetTopic,sheetId:sheetSetId,parentSheetId:cloneId });
+
+      // const temp2 = await sheetSetModel.findOneAndUpdate({machineId:machineId});
+      // temp2.sheetSet = temp1._id;
+      // temp2.save();
+    
+      res.send(temp1);
+ 
+    }else{
+      
+      const SetId = machineIdCheck._id;
+      const temp3 = await sheetModel.
+      create({ sheetTopic:sheetTopic,sheetId:SetId,parentSheetId:cloneId });
+    
+     
+      // const temp4 = await sheetSetModel.
+      // findOneAndUpdate({machineId:machineId},{ $push : { sheetSet : temp3._id }  },{new :true});
+
+       res.send(temp3);
+
+     }  
+
+
+
+}catch(e)
+{
+   console.log(e);
+   res.send(e.message);
+}
+
+});
+
+
 //  update Sheet Topic
 router.post('/updateSheetTopic',async(req,res)=>{
 
